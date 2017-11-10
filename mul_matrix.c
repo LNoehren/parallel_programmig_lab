@@ -13,7 +13,7 @@ int mul_matrix(int* first, int* second, int* result, int N){
 	return 0;
 } 
 
-int mul_matrix_omp(int* first, int* second, int* result, int N){
+/*int mul_matrix_omp(int* first, int* second, int* result, int N){
 	#pragma omp parallel for collapes(3)
         for(int i = 0; i < N; i++){
                 for(int k = 0; k < N; k++){
@@ -23,4 +23,4 @@ int mul_matrix_omp(int* first, int* second, int* result, int N){
                 }
         }
 	return 0;
-}
+}*/

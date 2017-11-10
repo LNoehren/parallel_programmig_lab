@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "functions.h"
 
 int read_matrix_bin(int* data, char* filename, int N){
         FILE *file;
