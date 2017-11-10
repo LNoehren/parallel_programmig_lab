@@ -7,6 +7,8 @@ int read_matrix_data(int* data, char* filename, int N);
 
 int mul_matrix(int* first, int* second, int* result, int N);
 
+int mul_matrix_mpi(int* first, int* second, int* result, int N);
+
 //int mul_matrix_omp(int* first, int* second, int* result, int N);
 
 int write_matrix(int*data, char* filename, int N);
@@ -26,3 +28,6 @@ static inline unsigned long long stop_time() {
 }
 
 void print_matrix(int* matrix, int N);
+
+void print_matrix2(int* matrix, int N, int M);
+

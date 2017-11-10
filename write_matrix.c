@@ -20,3 +20,14 @@ void print_matrix(int* matrix, int N){
 
 }
 
+void print_matrix2(int* matrix, int N, int M){
+        for(int i = 0; i< M; i++){
+                for(int j=0; j < N; j++){
+                        printf(" %d ", matrix[j + i*N]);
+                }
+                printf("\n");
+        }
+
+}
+
+
