@@ -1,11 +1,12 @@
 #include "functions.h"
+#include <stdio.h>
 
 int main(){
 	static int N = 10;
 	int *bin_mat = malloc(sizeof(int) * N*N);
 	int *data_mat = malloc(sizeof(int) * N*N);
 	int *mul_result = malloc(sizeof(int) * N*N);
-	int *mul_result_omp = malloc(sizeof(int) * N*N);
+	//int *mul_result_omp = malloc(sizeof(int) * N*N);
      		
 	//read bin
 	start_time();
@@ -26,24 +27,14 @@ int main(){
 	print_matrix(mul_result, N);
 	
 	//multiply with openMP
-	start_time();
+	/*start_time();
 	mul_matrix_omp(data_mat, data_mat, mul_result_omp, N);
 	printf("openmp: multiplying matrix of size %ix%i took %llu milliseconds\n", N, N, stop_time());
 	print_matrix(mul_result_omp, N);
-	
+	*/
 	start_time();
-	write_matrix(mul_result_omp, "/bigwork/nhmqnoeh/myAA_1000x1000.bin", N);
+	write_matrix(mul_result, "/bigwork/nhmqnoeh/myAA_1000x1000.bin", N);
 	printf("writing bin matrix of size %ix%i took %llu milliseconds\n", N, N, stop_time());
 
 	return 0;
-}
-
-void print_matrix(int* matrix, int N){
-	for(int i = 0; i< N; i++){
-                for(int j=0; j < N; j++){
-                        printf(" %d ", matrix[j + i*N]);
-                }
-                printf("\n");
-        }
-
 }
