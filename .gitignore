@@ -1,0 +1,6 @@
+*.o
+main
+matrix
+main_openmp
+main_serial
+mpi_main
