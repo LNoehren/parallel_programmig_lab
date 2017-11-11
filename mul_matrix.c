@@ -30,7 +30,7 @@ int mul_matrix_mpi(int* first, int* second, int* result, int N){
 		}
         }
         return 0;
-} // */
+}
 
 
 /*int mul_matrix_omp(int* first, int* second, int* result, int N){
