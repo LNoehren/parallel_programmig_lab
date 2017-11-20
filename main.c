@@ -35,6 +35,10 @@ int main(){
 	start_time();
 	write_matrix(mul_result, "/bigwork/nhmqnoeh/myAA_1000x1000.bin", N);
 	printf("writing bin matrix of size %ix%i took %llu milliseconds\n", N, N, stop_time());
+	
+	free(bin_mat);
+	free(data_mat);
+	free(mul_result);	
 
 	return 0;
 }

@@ -3,6 +3,8 @@
 
 int read_matrix_bin(int* data, char* filename, int N);
 
+int read_part_matrix_bin(int* data, char* filename, int N);
+
 int read_matrix_data(int* data, char* filename, int N);
 
 int mul_matrix(int* first, int* second, int* result, int N);

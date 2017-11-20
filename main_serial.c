@@ -9,5 +9,8 @@ int main(){
 	mul_matrix(bin_mat, bin_mat, mul_result, N);
 	write_matrix(mul_result, "/bigwork/nhmqnoeh/AA_30000x30000.bin", N);
 	
+	free(bin_mat);
+	free(mul_result);
+
 	return 0;
 }
