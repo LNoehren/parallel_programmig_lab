@@ -40,7 +40,8 @@ int main(int argc, char* argv){
 	else
 		MPI_Gatherv(&partRes[startpos], N*(N/worldSize), MPI_INT, result, recCount, dispels, MPI_INT, 0, MPI_COMM_WORLD);
 
-	if(rank==0){
+	if(rank==2){
+		//print_matrix(result, N);
 		write_matrix(result, "/bigwork/nhmqnoeh/C_30000x30000.bin", N);
 	}
 	

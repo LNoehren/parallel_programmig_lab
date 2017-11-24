@@ -1,17 +1,17 @@
 
 CC=mpicc
-CFLAGS=-O3 -g
+CFLAGS=-O3 -g -lm
 
 DEPS=global.h functions.h
 
 OBJ=write_matrix.o read_matrix.o mul_matrix.o
 
-mpi_main36: $(OBJ) mpi_main36.o
+test: $(OBJ) test.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c $(DEPS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJ) mpi_main36.o
+	rm -f $(OBJ) test.o
 

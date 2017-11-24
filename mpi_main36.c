@@ -7,7 +7,7 @@
 int main(int argc, char* argv){
 	int rank;
 	int worldSize;
-	int N = 10;
+	int N = 30000;
 
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -26,8 +26,8 @@ int main(int argc, char* argv){
 		result = malloc(sizeof(int)*N*N);
 	}
 
-	read_part_matrix_bin(matA, "/bigwork/nhmqnoeh/A_10x10.bin", N);
-	read_part_matrix_bin(matB, "/bigwork/nhmqnoeh/B_10x10.bin", N);
+	read_part_matrix_bin(matA, "/bigwork/nhmqnoeh/A_30000x30000.bin", N);
+	read_part_matrix_bin(matB, "/bigwork/nhmqnoeh/B_30000x30000.bin", N);
 	
 	for(int i = 0; i < worldSize; i++){
 		if(i != rank){
@@ -50,7 +50,7 @@ int main(int argc, char* argv){
 
 	}
 
-	if(rank==0)print_matrix(matB, N);
+	//if(rank==0)print_matrix(matB, N);
 	mul_matrix_mpi(matA, matB, partRes, N);
 	
 	char partMatPath[50];

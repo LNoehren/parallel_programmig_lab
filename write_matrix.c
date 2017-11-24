@@ -27,6 +27,7 @@ void print_matrix2(int* matrix, int N, int M){
                 }
                 printf("\n");
         }
+	printf("\n\n");
 
 }
 
