@@ -38,10 +38,12 @@ int mul_matrix_mpi_rect(int* first, int* second, int* result, int N){
         int rank;
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	
 	int chunkPerLine = sqrt(world_size);
 	int yChunkPos = rank/chunkPerLine;
         int chunkSize = N/chunkPerLine;
-        int bigchunkX = chunkSize;
+        
+	int bigchunkX = chunkSize;
 	int bigchunkY = chunkSize;
         if((rank%chunkPerLine) == chunkPerLine-1)bigchunkX+=N%chunkPerLine;
 	if((int)(rank/chunkPerLine) == chunkPerLine-1)bigchunkY+=N%chunkPerLine;
