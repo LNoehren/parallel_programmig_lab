@@ -53,9 +53,11 @@ int mul_matrix_mpi_rect(int* first, int* second, int* result, int N){
 
         for(int i = (rank%chunkPerLine)*chunkSize; i < ((rank%chunkPerLine)+1)*bigchunkX && i < N; i++){
                 for(int k = yChunkPos*chunkSize; k < (yChunkPos+1)*bigchunkY && k < N; k++){
-                        for(int j = 0; j < N; j++){
-                                result[i+k*N] += first[i+j*N] * second[j+k*N];
+                        int sum = 0;
+			for(int j = 0; j < N; j++){
+                                sum += first[i+j*N] * second[j+k*N];
                         }
+			result[i+k*N] = sum;
                 }
         }
         return 0;

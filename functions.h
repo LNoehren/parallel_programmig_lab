@@ -19,6 +19,8 @@ int write_matrix(int*data, char* filename, int N);
 
 int write_matrix_mpi(int*data, char* filename, int N);
 
+int write_matrix_mpi_all(int*data, char* filename, int N);
+
 static struct timeval tm1;
 
 static inline void start_time() {
