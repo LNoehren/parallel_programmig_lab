@@ -23,11 +23,14 @@ int write_matrix_mpi(int* data, char* filename, int N) {
 	int chunkPerLine = sqrt(worldSize);
 	int blockWidth = N/chunkPerLine;
 	int startPosX = (rank%chunkPerLine)*blockWidth;
-	int startPosY = (int)(rank/chunkPerLine) * chunkPerLine * N;
+	int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
+	
+	if(rank >= chunkPerLine*chunkPerLine)return 0;
 
-        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY | MPI_MODE_SEQUENTIAL, MPI_INFO_NULL, &file);
+        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &file);
 	for(int i = 0; i < blockWidth; i++){
-		MPI_File_write_at(file, startPosX+startPosY+i*N, &data[startPosX+startPosY+i*N], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+		int startPos = startPosX+startPosY+i*N;
+		MPI_File_write_at(file, sizeof(int)*startPos, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
 	}
 	MPI_File_close(&file);
         return 0;
@@ -44,11 +47,12 @@ int write_matrix_mpi_all(int* data, char* filename, int N) {
         int chunkPerLine = sqrt(worldSize);
         int blockWidth = N/chunkPerLine;
         int startPosX = (rank%chunkPerLine)*blockWidth;
-        int startPosY = (int)(rank/chunkPerLine) * chunkPerLine * N;
+        int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
 
-        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY | MPI_MODE_SEQUENTIAL, MPI_INFO_NULL, &file);
+        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &file);
         for(int i = 0; i < blockWidth; i++){
-                MPI_File_write_at_all(file, startPosX+startPosY+i*N, &data[startPosX+startPosY+i*N], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+                int startPos = startPosX+startPosY+i*N;
+		MPI_File_write_at_all(file, sizeof(int) * startPos, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
         return 0;
@@ -62,17 +66,19 @@ void print_matrix(int* matrix, int N){
                 }
                 printf("\n");
         }
+	printf("\n");
 
 }
 
 void print_matrix2(int* matrix, int N, int M){
-        for(int i = 0; i< M; i++){
+        printf("\n");
+	for(int i = 0; i< M; i++){
                 for(int j=0; j < N; j++){
                         printf(" %d ", matrix[j + i*N]);
                 }
                 printf("\n");
         }
-	printf("\n\n");
+	printf("\n");
 
 }
 
