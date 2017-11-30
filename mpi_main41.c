@@ -105,7 +105,7 @@ int main(int argc, char* argv){
                	}
 	}
 	
-	if(rank==0)print_matrix(mat, N);	
+	//if(rank==0)print_matrix(mat, N);	
 
 	mul_matrix_mpi_rect(mat, matE, partRes, N);
 	
