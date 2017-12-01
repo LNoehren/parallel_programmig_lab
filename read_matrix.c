@@ -5,6 +5,7 @@
 #include <math.h>
 #include "functions.h"
 
+//read a matrix in binary format
 int read_matrix_bin(int* data, char* filename, int N){
         FILE *file;
         
@@ -18,7 +19,7 @@ int read_matrix_bin(int* data, char* filename, int N){
 	return 0;
 }
 
-
+//read a matrix in data format
 int read_matrix_data(int* data, char* filename, int N){
         FILE *file;
         char buffer[N];
@@ -46,7 +47,7 @@ int read_matrix_data(int* data, char* filename, int N){
 	fclose(file);
 	return 0;
 }
-
+/*
 int read_part_matrix_bin(int* data, char* filename, int N){
         int world_size;
         int rank;
@@ -69,8 +70,9 @@ int read_part_matrix_bin(int* data, char* filename, int N){
         fread(&data[rank*chunkSize], sizeof(int)*bigchunk, 1, file);
         fclose(file);
         return 0;
-}
+}*/
 
+//read a matrix using mpi fileviews
 int read_matrix_mpi_fw(int* data, char* filename, int N) {
         MPI_File file;
         int rank;

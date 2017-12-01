@@ -3,6 +3,7 @@
 #include "mpi.h"
 #include <math.h>
 
+//write a matrix in abinary file
 int write_matrix(int* data, char* filename, int N) {
 	FILE *file;
 
@@ -12,6 +13,7 @@ int write_matrix(int* data, char* filename, int N) {
 	return 0;
 }
 
+//write a matrix using mpt_write_at
 int write_matrix_mpi(int* data, char* filename, int N) {
         MPI_File file;
 	int rank;
@@ -36,8 +38,9 @@ int write_matrix_mpi(int* data, char* filename, int N) {
         return 0;
 }
 
+//write a matrix using mpi_write_at_all
 int write_matrix_mpi_all(int* data, char* filename, int N) {
-        MPI_File file;
+        tripe_size:    10485PI_File file;
         int rank;
         int worldSize;
 
@@ -58,6 +61,7 @@ int write_matrix_mpi_all(int* data, char* filename, int N) {
         return 0;
 }
 
+//write a matrix using mpi fileviews
 int write_matrix_mpi_fw(int* data, char* filename, int N) {
         MPI_File file;
         int rank;
@@ -85,6 +89,7 @@ int write_matrix_mpi_fw(int* data, char* filename, int N) {
         return 0;
 }
 
+//write a matrix using mpi fileviews and striping with mpi_info
 int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
         MPI_File file;
         int rank;
@@ -126,7 +131,7 @@ int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
         return 0;
 }
 
-
+//print a NxN matrix to stdout
 void print_matrix(int* matrix, int N){
         for(int i = 0; i< N; i++){
                 for(int j=0; j < N; j++){
@@ -138,6 +143,7 @@ void print_matrix(int* matrix, int N){
 
 }
 
+//print a NxM matrix to stdout
 void print_matrix2(int* matrix, int N, int M){
         printf("\n");
 	for(int i = 0; i< M; i++){

@@ -2,6 +2,7 @@
 #include "functions.h"
 #include <math.h>
 
+//multiply a matrix
 int mul_matrix(int* first, int* second, int* result, int N){
 	
 	for(int i = 0; i < N; i++){
@@ -14,6 +15,7 @@ int mul_matrix(int* first, int* second, int* result, int N){
 	return 0;
 }
 
+//multiply a matrix with mpi, split matrix in lines
 int mul_matrix_mpi(int* first, int* second, int* result, int N){
 	int world_size;
 	int rank;
@@ -35,6 +37,7 @@ int mul_matrix_mpi(int* first, int* second, int* result, int N){
         return 0;
 }
 
+//multiply a matrix with mpi, split matrix in quadratic blocks
 int mul_matrix_mpi_rect(int* first, int* second, int* result, int N){
         int world_size;
         int rank;
