@@ -14,6 +14,12 @@ int main(int argc, char* argv){
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 	
+	int chunkPerLine = sqrt(worldSize);
+        if(chunkPerLine * chunkPerLine != worldSize){
+                if(rank==0) printf("Please only use a square number of Processors\n");
+                return 1;
+        }
+	
 	int chunkSize = N*N/worldSize;
 	int bigChunk = chunkSize;
 	if(rank == worldSize - 1) bigChunk += (N*N)%worldSize;
@@ -67,7 +73,6 @@ int main(int argc, char* argv){
 	read_matrix_bin(mat, partMatAPath, N);
 	read_matrix_bin(matE, partMatBPath, N);
 	
-	int chunkPerLine = sqrt(worldSize);
         int blockWidth = N/chunkPerLine;
         int startPosX = (rank%chunkPerLine)*blockWidth;
         int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;

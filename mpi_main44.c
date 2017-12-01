@@ -116,7 +116,7 @@ int main(int argc, char* argv){
 	
 	char resultPath[50];
 	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/MY_C_%ix%i.bin", N, N);
-	write_matrix_mpi(partRes, resultPath, N);
+	write_matrix_mpi_fw(partRes, resultPath, N);
 		
 	if(rank == 0){
 		//read_matrix_bin(mat, resultPath, N);
