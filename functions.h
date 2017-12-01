@@ -7,6 +7,8 @@ int read_part_matrix_bin(int* data, char* filename, int N);
 
 int read_matrix_data(int* data, char* filename, int N);
 
+int read_matrix_mpi_fw(int* data, char* filename, int N);
+
 int mul_matrix(int* first, int* second, int* result, int N);
 
 int mul_matrix_mpi(int* first, int* second, int* result, int N);
@@ -20,6 +22,8 @@ int write_matrix(int*data, char* filename, int N);
 int write_matrix_mpi(int*data, char* filename, int N);
 
 int write_matrix_mpi_all(int*data, char* filename, int N);
+
+int write_matrix_mpi_fw(int*data, char* filename, int N);
 
 static struct timeval tm1;
 
