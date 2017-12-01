@@ -1,9 +1,9 @@
 #!/bin/bash -login
-#PBS -N mul_42
+#PBS -N mul_41
 #PBS -l nodes=4:ppn=4
 #PBS -l walltime=50:00:00
 #PBS -l mem=60gb
-#PBS -W x=PARTITION:lena
+#PBS -W x=PARTITION:lena 
 #PBS -M lennardnoehren@gmx.de
 
 # show which computer the job ran on
@@ -13,4 +13,4 @@ cd /home/nhmqnoeh
 
 module load intel
 # run the simulation
-mpirun ./mpi_main42
+mpirun ./mpi_main41
