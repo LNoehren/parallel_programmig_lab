@@ -36,5 +36,7 @@ int main(int argc, char* argv){
 	if(rank==0){
 		printf("writing took %llu ms\n", stop_time());
 	}
+	MPI_Finalize();
+
 	return 0;
 }

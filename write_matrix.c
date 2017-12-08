@@ -40,7 +40,7 @@ int write_matrix_mpi(int* data, char* filename, int N) {
 
 //write a matrix using mpi_write_at_all
 int write_matrix_mpi_all(int* data, char* filename, int N) {
-        tripe_size:    10485PI_File file;
+        MPI_File file;
         int rank;
         int worldSize;
 
@@ -109,7 +109,7 @@ int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
 
 	int stripe_count = worldSize;
 	if(stripe_count > 20) stripe_count = 20;
-	int stripe_size = 10*N*N / stripe_count;
+	int stripe_size = 4*N*N / stripe_count;
 	
 	char temp[100];
 	sprintf(temp, "%d", stripe_count);
