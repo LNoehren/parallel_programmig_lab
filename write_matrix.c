@@ -128,6 +128,8 @@ int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
                 MPI_File_write(file, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
+
+	MPI_Info_free(&info);
         return 0;
 }
 
