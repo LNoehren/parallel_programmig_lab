@@ -9,6 +9,8 @@ int read_matrix_data(int* data, char* filename, int N);
 
 int read_matrix_mpi_fw(int* data, char* filename, int N);
 
+int read_matrix_mpi_fw2(int* data, char* filename, int N, int M);
+
 int mul_matrix(int* first, int* second, int* result, int N);
 
 int mul_matrix_mpi(int* first, int* second, int* result, int N);

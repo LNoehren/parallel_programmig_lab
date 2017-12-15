@@ -72,7 +72,7 @@ int read_part_matrix_bin(int* data, char* filename, int N){
         return 0;
 }*/
 
-//read a matrix using mpi fileviews
+//read a NxN matrix using mpi fileviews
 int read_matrix_mpi_fw(int* data, char* filename, int N) {
         MPI_File file;
         int rank;
@@ -95,6 +95,50 @@ int read_matrix_mpi_fw(int* data, char* filename, int N) {
 		int startPos = startPosX+startPosY+i*N;
 		MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, dataBlock, "native", MPI_INFO_NULL);
                 MPI_File_read(file, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+        }
+        MPI_File_close(&file);
+        return 0;
+}
+
+//read NxM matrix using mpi fileviews
+int read_matrix_mpi_fw2(int* data, char* filename, int N, int M) {
+        MPI_File file;
+        int rank;
+        int worldSize;
+
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+
+	int matSize = N > M ? N : M;
+
+	//startPos in file
+        int chunkPerLine = sqrt(worldSize);
+        int blockWidth = matSize/chunkPerLine;
+        int startPosX = (rank%chunkPerLine) * blockWidth;
+        int startPosY = (int)(rank/chunkPerLine) * blockWidth * matSize;
+	
+	int bigChunkX = blockWidth;
+	int bigChunkY = blockWidth;
+	if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += matSize%chunkPerLine;
+        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += matSize%chunkPerLine;	
+
+	//startPos in data
+	int startPosXData = N > M ? startPosX : 0;
+	int startPosYData = N > M ? 0 : (int)(rank/chunkPerLine)*blockWidth*N;
+
+        MPI_Datatype dataBlock, matRow;
+        MPI_Type_contiguous(bigChunkX, MPI_INT, &dataBlock);
+	MPI_Type_create_resized(dataBlock, 0, matSize * sizeof(int), &matRow);
+        MPI_Type_commit(&matRow);
+
+        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
+        
+	int startPos = startPosX+startPosY;
+	MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, matRow, "native", MPI_INFO_NULL);
+
+	for(int i = 0; i < bigChunkY; i++){
+		int startPosData = startPosXData+startPosYData+i*N;
+                MPI_File_read(file, &data[startPosData], bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
         return 0;
