@@ -86,15 +86,21 @@ int read_matrix_mpi_fw(int* data, char* filename, int N) {
         int startPosX = (rank%chunkPerLine) * blockWidth;
         int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
 
-        MPI_Datatype dataBlock;
-        MPI_Type_contiguous(blockWidth, MPI_INT, &dataBlock);
-        MPI_Type_commit(&dataBlock);
-	
+	int bigChunkX = blockWidth;
+        int bigChunkY = blockWidth;
+        if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += N%chunkPerLine;
+        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += N%chunkPerLine;
+
+	MPI_Datatype dataBlock, matRow;
+        MPI_Type_contiguous(bigChunkX, MPI_INT, &dataBlock);
+        MPI_Type_create_resized(dataBlock, 0, N * sizeof(int), &matRow);
+        MPI_Type_commit(&matRow);
+
         MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
-        for(int i = 0; i < blockWidth; i++){
+        MPI_File_set_view(file, sizeof(int) * (startPosX+startPosY), MPI_INT, matRow, "native", MPI_INFO_NULL);
+	for(int i = 0; i < bigChunkY; i++){
 		int startPos = startPosX+startPosY+i*N;
-		MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, dataBlock, "native", MPI_INFO_NULL);
-                MPI_File_read(file, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+                MPI_File_read(file, &data[startPos], 1, matRow, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
         return 0;
@@ -138,7 +144,7 @@ int read_matrix_mpi_fw2(int* data, char* filename, int N, int M) {
 
 	for(int i = 0; i < bigChunkY; i++){
 		int startPosData = startPosXData+startPosYData+i*N;
-                MPI_File_read(file, &data[startPosData], bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
+                MPI_File_read(file, &data[startPosData], 1, matRow, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
         return 0;

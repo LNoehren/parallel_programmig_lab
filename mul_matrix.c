@@ -8,7 +8,7 @@ int mul_matrix(int* first, int* second, int* result, int N){
 	for(int i = 0; i < N; i++){
 		for(int k = 0; k < N; k++){
 			for(int j = 0; j < N; j++){
-				result[i+k*N] += first[i+j*N] * second[j+k*N];
+				result[i+k*N] += first[j+k*N] * second[i+j*N];
 			}
 		}
 	}
@@ -29,7 +29,7 @@ int mul_matrix_mpi(int* first, int* second, int* result, int N){
                 for(int k = rank*chunkSize; k < (rank+1)*bigchunk && k < N; k++){
                         int sum = 0;
 			for(int j = 0; j < N; j++){
-                                sum += first[i+j*N] * second[j+k*N];
+                                sum += first[j+k*N] * second[i+j*N];
                         }
 			result[i+k*N] = sum;
 		}
@@ -58,7 +58,7 @@ int mul_matrix_mpi_rect(int* first, int* second, int* result, int N){
                 for(int k = yChunkPos*chunkSize; k < (yChunkPos+1)*bigchunkY && k < N; k++){
                         int sum = 0;
 			for(int j = 0; j < N; j++){
-                                sum += first[i+j*N] * second[j+k*N];
+                                sum += first[j+k*N] * second[i+j*N];
                         }
 			result[i+k*N] = sum;
                 }
@@ -66,14 +66,26 @@ int mul_matrix_mpi_rect(int* first, int* second, int* result, int N){
         return 0;
 }
 
-/*int mul_matrix_omp(int* first, int* second, int* result, int N){
-	#pragma omp parallel for collapes(3)
-        for(int i = 0; i < N; i++){
-                for(int k = 0; k < N; k++){
+//multiply a matrix with mpi, split in quadratic blocs, input matrices are NxM and MxN
+int mul_matrix_mpi_rect2(int* first, int* second, int* result, int N, int M){
+        int world_size;
+        int rank;
+        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+        int chunkPerLine = sqrt(world_size);
+	int chunkSize = N/chunkPerLine;
+        int yChunkPos =(int)(rank/chunkPerLine) * chunkSize;
+        int xChunkPos = rank%chunkPerLine * chunkSize;
+
+        for(int i = 0; i < M; i++){
+                for(int k = 0; k < M; k++){
+                        int sum = 0;
                         for(int j = 0; j < N; j++){
-                                result[i+k*N] += first[i+j*N] * second[j+k*N];
+                                sum += first[j+k*N] * second[i+j*M];
                         }
+                        result[(i+xChunkPos)+(k+yChunkPos)*N] = sum;
                 }
         }
-	return 0;
-}*/
+        return 0;
+}

@@ -8,7 +8,7 @@
 int main(int argc, char* argv){
 	int rank;
 	int worldSize;
-	int N = 30000;
+	int N = 10;
 
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -115,12 +115,12 @@ int main(int argc, char* argv){
 	mul_matrix_mpi_rect(mat, matE, partRes, N);
 	
 	char resultPath[50];
-	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/MY_C_%ix%i.bin", N, N);
+	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/C_%ix%i.bin", N, N);
 	write_matrix_mpi_all(partRes, resultPath, N);
 		
 	if(rank == 0){
-		//read_matrix_bin(mat, resultPath, N);
-		//print_matrix(mat, N);		
+		read_matrix_bin(mat, resultPath, N);
+		print_matrix(mat, N);		
 		printf("time taken: %llu ms\n", stop_time());
 	}// */ 
 

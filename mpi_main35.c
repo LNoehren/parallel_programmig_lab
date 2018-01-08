@@ -13,9 +13,9 @@ int main(int argc, char* argv){
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 	
-	int chunkSize = N*N/worldSize;
+	int chunkSize = N/worldSize;
 	int bigChunk = chunkSize;
-	if(rank == worldSize - 1) bigChunk += (N*N)%worldSize;
+	if(rank == worldSize - 1) bigChunk += N%worldSize;
 
 	int* mat = malloc(sizeof(int)*N*N);
 	int* matE = malloc(sizeof(int)*N*N);
@@ -68,16 +68,15 @@ int main(int argc, char* argv){
 
 	for(int i = 0; i < worldSize; i++){
 		if(i != rank){
-			MPI_Send(&mat[rank*chunkSize], bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD);
-			MPI_Send(&matE[rank*chunkSize], bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD);
-			if(i == worldSize-1){
-				MPI_Recv(&mat[i*chunkSize], chunkSize+((N*N)%worldSize), MPI_INT, i, 0 ,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				MPI_Recv(&matE[i*chunkSize], chunkSize+((N*N)%worldSize), MPI_INT, i, 0 ,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			}
-			else {
-				MPI_Recv(&mat[i*chunkSize], chunkSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                                MPI_Recv(&matE[i*chunkSize], chunkSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			}
+			MPI_Send(&mat[rank*N*chunkSize], N*bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD);
+			MPI_Send(&matE[rank*N*chunkSize], N*bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD);
+			
+			int recSize = chunkSize;
+			if(i == worldSize-1) recSize += N%worldSize;
+			
+			MPI_Recv(&mat[i*N*chunkSize], N*recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                        MPI_Recv(&matE[i*N*chunkSize], N*recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			
                	}
 
 	}

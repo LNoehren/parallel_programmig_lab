@@ -48,7 +48,7 @@ int main(int argc, char* argv){
         snprintf(partMatAPath, sizeof(partMatAPath), "/bigwork/nhmqnoeh/partialMatA/result.%i", getpid());
 	write_matrix(partRes, partMatAPath, N);
 	
-	//if(rank==0)print_matrix(partRes, N);
+	if(rank==0)print_matrix(partRes, N);
 	
 	//read matB
 	if(rank == 0){
@@ -115,7 +115,7 @@ int main(int argc, char* argv){
 	mul_matrix_mpi_rect(mat, matE, partRes, N);
 	
 	char resultPath[50];
-	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/MY_C_%ix%i.bin", N, N);
+	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/C_%ix%i.bin", N, N);
 	write_matrix_mpi_fw(partRes, resultPath, N);
 		
 	if(rank == 0){

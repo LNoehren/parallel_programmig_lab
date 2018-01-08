@@ -27,12 +27,15 @@ int write_matrix_mpi(int* data, char* filename, int N) {
 	int startPosX = (rank%chunkPerLine)*blockWidth;
 	int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
 	
-	if(rank >= chunkPerLine*chunkPerLine)return 0;
+	int bigChunkX = blockWidth;
+        int bigChunkY = blockWidth;
+        if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += N%chunkPerLine;
+        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += N%chunkPerLine;
 
         MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &file);
-	for(int i = 0; i < blockWidth; i++){
+	for(int i = 0; i < bigChunkY; i++){
 		int startPos = startPosX+startPosY+i*N;
-		MPI_File_write_at(file, sizeof(int)*startPos, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+		MPI_File_write_at(file, sizeof(int)*startPos, &data[startPos], bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
 	}
 	MPI_File_close(&file);
         return 0;
@@ -52,10 +55,15 @@ int write_matrix_mpi_all(int* data, char* filename, int N) {
         int startPosX = (rank%chunkPerLine)*blockWidth;
         int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
 
+	int bigChunkX = blockWidth;
+        int bigChunkY = blockWidth;
+        if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += N%chunkPerLine;
+        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += N%chunkPerLine;
+
         MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &file);
-        for(int i = 0; i < blockWidth; i++){
+        for(int i = 0; i < bigChunkY; i++){
                 int startPos = startPosX+startPosY+i*N;
-		MPI_File_write_at_all(file, sizeof(int) * startPos, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+		MPI_File_write_at_all(file, sizeof(int)*startPos, &data[startPos], bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
         return 0;
@@ -75,15 +83,21 @@ int write_matrix_mpi_fw(int* data, char* filename, int N) {
         int startPosX = (rank%chunkPerLine)*blockWidth;
         int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
 
-	MPI_Datatype dataBlock;
-	MPI_Type_contiguous(blockWidth, MPI_INT, &dataBlock);
-	MPI_Type_commit(&dataBlock);
+	int bigChunkX = blockWidth;
+        int bigChunkY = blockWidth;
+        if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += N%chunkPerLine;
+        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += N%chunkPerLine;
+
+	MPI_Datatype dataBlock, matRow;
+        MPI_Type_contiguous(bigChunkX, MPI_INT, &dataBlock);
+        MPI_Type_create_resized(dataBlock, 0, N * sizeof(int), &matRow);
+        MPI_Type_commit(&matRow);
 
         MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &file);
-        for(int i = 0; i < blockWidth; i++){
+	MPI_File_set_view(file, sizeof(int) * (startPosX+startPosY), MPI_INT, matRow, "native", MPI_INFO_NULL);
+        for(int i = 0; i < bigChunkY; i++){
                 int startPos = startPosX+startPosY+i*N;
-                MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, dataBlock, "native", MPI_INFO_NULL);
-		MPI_File_write(file, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+                MPI_File_write(file, &data[startPos], 1, matRow, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
         return 0;
@@ -103,9 +117,15 @@ int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
         int startPosX = (rank%chunkPerLine)*blockWidth;
         int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
 
-        MPI_Datatype dataBlock;
-        MPI_Type_contiguous(blockWidth, MPI_INT, &dataBlock);
-        MPI_Type_commit(&dataBlock);
+	int bigChunkX = blockWidth;
+        int bigChunkY = blockWidth;
+        if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += N%chunkPerLine;
+        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += N%chunkPerLine;
+
+        MPI_Datatype dataBlock, matRow;
+        MPI_Type_contiguous(bigChunkX, MPI_INT, &dataBlock);
+	MPI_Type_create_resized(dataBlock, 0, N * sizeof(int), &matRow);
+        MPI_Type_commit(&matRow);
 
 	int stripe_count = worldSize;
 	if(stripe_count > 20) stripe_count = 20;
@@ -122,10 +142,10 @@ int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
 	MPI_Info_set(info, "striping unit", temp);
 
         MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, info, &file);
-        for(int i = 0; i < blockWidth; i++){
+        MPI_File_set_view(file, sizeof(int) * (startPosX+startPosY), MPI_INT, matRow, "native", info);
+	for(int i = 0; i < bigChunkY; i++){
                 int startPos = startPosX+startPosY+i*N;
-                MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, dataBlock, "native", info);
-                MPI_File_write(file, &data[startPos], blockWidth, MPI_INT, MPI_STATUS_IGNORE);
+                MPI_File_write(file, &data[startPos], 1, matRow, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
 

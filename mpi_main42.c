@@ -115,7 +115,7 @@ int main(int argc, char* argv){
 	mul_matrix_mpi_rect(mat, matE, partRes, N);
 	
 	char resultPath[50];
-	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/MY_C_%ix%i.bin", N, N);
+	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/C_%ix%i.bin", N, N);
 	write_matrix_mpi(partRes, resultPath, N);
 		
 	if(rank == 0){

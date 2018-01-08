@@ -1,5 +1,6 @@
 #include <mpi.h>
 #include "functions.h"
+#include <stdio.h>
 
 int main(int argc, char* argv){
 	int rank;
@@ -16,9 +17,17 @@ int main(int argc, char* argv){
 	int* result;
 	
 	if(rank == 0){
+		start_time();
 		result = malloc(sizeof(int)*N*N);
-		read_matrix_bin(matA, "/bigwork/nhmqnoeh/A_30000x30000.bin", N);
-		read_matrix_bin(matB, "/bigwork/nhmqnoeh/B_30000x30000.bin", N);
+
+		//read matA and matB
+		char aPath[50];
+		char bPath[50];
+		snprintf(aPath, sizeof(aPath), "/bigwork/nhmqnoeh/A_%ix%i.bin", N, N);
+		snprintf(bPath, sizeof(bPath), "/bigwork/nhmqnoeh/B_%ix%i.bin", N, N);
+		
+		read_matrix_bin(matA, aPath, N);
+		read_matrix_bin(matB, bPath, N);
 	}
 	MPI_Bcast(matA, N*N, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(matB, N*N, MPI_INT, 0, MPI_COMM_WORLD);
@@ -40,9 +49,13 @@ int main(int argc, char* argv){
 	else
 		MPI_Gatherv(&partRes[startpos], N*(N/worldSize), MPI_INT, result, recCount, dispels, MPI_INT, 0, MPI_COMM_WORLD);
 
-	if(rank==2){
+	if(rank==0){
 		//print_matrix(result, N);
-		write_matrix(result, "/bigwork/nhmqnoeh/C_30000x30000.bin", N);
+
+		char cPath[50];
+		snprintf(cPath, sizeof(cPath), "/bigwork/nhmqnoeh/C_%ix%i.bin", N, N);
+		write_matrix(result, cPath, N);
+		printf("3.4 took %llums\n", stop_time());
 	}
 	
 	free(matA);

@@ -1,6 +1,6 @@
 #!/bin/bash -login
 #PBS -N mul_44
-#PBS -l nodes=3:ppn=3
+#PBS -l nodes=4:ppn=4
 #PBS -l walltime=50:00:00
 #PBS -l mem=60gb
 #PBS -W x=PARTITION:lena 

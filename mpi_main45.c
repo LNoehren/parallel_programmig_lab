@@ -35,7 +35,7 @@ int main(int argc, char* argv){
 	read_matrix_mpi_fw(matA, aPath, N);
 	read_matrix_mpi_fw(matB, bPath, N);
 
-	//if(rank==0)print_matrix(matA, N);
+	//if(rank==2)print_matrix(matA, N);
 	
 	int blockWidth = N/chunkPerLine;
         int startPosX = (rank%chunkPerLine)*blockWidth;
@@ -46,7 +46,7 @@ int main(int argc, char* argv){
 
         if((rank%chunkPerLine) == chunkPerLine-1)sendSize += N%chunkPerLine;
 
-	for(int i = 0; i < chunkPerLine*chunkPerLine; i++){
+	for(int i = 0; i < worldSize; i++){
 		if(rank != i){
 			int istartPosX = (i%chunkPerLine)*blockWidth;
 			int istartPosY = (int)(i/chunkPerLine) * blockWidth * N;
@@ -74,7 +74,7 @@ int main(int argc, char* argv){
                	}
 	}
 	
-	//if(rank==0)print_matrix(matA, N);	
+	//if(rank==2)print_matrix(matA, N);	
 
 	mul_matrix_mpi_rect(matA, matB, partRes, N);
 	
@@ -83,8 +83,8 @@ int main(int argc, char* argv){
 	write_matrix_mpi_fw(partRes, resultPath, N);
 		
 	if(rank == 0){
-		//read_matrix_bin(mat, resultPath, N);
-		//print_matrix(mat, N);		
+		//read_matrix_bin(matA, resultPath, N);
+		//print_matrix(matA, N);		
 		printf("time taken: %llu ms\n", stop_time());
 	}// */ 
 
