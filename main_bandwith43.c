@@ -21,8 +21,8 @@ int main(int argc, char* argv){
         int* mat = malloc(sizeof(int)*N*N);
 
 	
-                char aPath[50];
-                snprintf(aPath, sizeof(aPath), "/bigwork/nhmqnoeh/A_%ix%i.bin", N, N);
+ 	char aPath[50];
+        snprintf(aPath, sizeof(aPath), "/bigwork/nhmqnoeh/A_%ix%i.bin", N, N);
         if(rank==0){
 		read_matrix_bin(mat, aPath, N);
         }

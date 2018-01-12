@@ -1,8 +1,8 @@
 #!/bin/bash -login
 #PBS -N bandwidth_43
 #PBS -l nodes=4:ppn=4
-#PBS -l walltime=50:00:00
-#PBS -l mem=60gb
+#PBS -l walltime=1:00:00
+#PBS -l mem=20gb
 #PBS -W x=PARTITION:lena
 #PBS -M lennardnoehren@gmx.de
 
