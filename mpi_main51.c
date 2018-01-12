@@ -9,7 +9,7 @@
 int main(int argc, char* argv){
 	int rank;
 	int worldSize;
-	int N = 10;
+	int N = 30000;
 
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -38,13 +38,10 @@ int main(int argc, char* argv){
 	MPI_Comm_size(rowComm, &rowSize);
 	MPI_Comm_size(colComm, &colSize);
 	
-	int blockHeight = blockSize;
-	int blockWidth = blockSize;
-        if(rowRank == rowSize-1)blockWidth += N%chunkPerLine;
-        if(colRank == colSize-1)blockHeight += N%chunkPerLine;
+	int bigBlock = blockSize + N%chunkPerLine;
 
-	int* rowMatA = malloc(sizeof(int)*N*blockHeight);
-	int* colMatB = malloc(sizeof(int)*N*blockWidth);
+	int* rowMatA = malloc(sizeof(int)*N*bigBlock);
+	int* colMatB = malloc(sizeof(int)*N*bigBlock);
 	int* partRes = malloc(sizeof(int)*N*N);
 	
 	if(rank==0)start_time();
@@ -55,34 +52,26 @@ int main(int argc, char* argv){
 	snprintf(aPath, sizeof(aPath), "/bigwork/nhmqnoeh/A_%ix%i.bin", N, N);
 	snprintf(bPath, sizeof(bPath), "/bigwork/nhmqnoeh/B_%ix%i.bin", N, N);
 	
-	read_matrix_mpi_fw2(rowMatA, aPath, N, blockHeight);
-	read_matrix_mpi_fw2(colMatB, bPath, blockWidth, N);
+	read_matrix_mpi_fw2(rowMatA, aPath, N, bigBlock);
+	read_matrix_mpi_fw2(colMatB, bPath, bigBlock, N);
 
-	if(rank==6)print_matrix2(rowMatA, N, blockHeight);
-	if(rank==6)print_matrix2(colMatB, blockWidth, N);
+	//if(rank==0)print_matrix2(rowMatA, N, bigBlock);
+	//if(rank==0)print_matrix2(colMatB, bigBlock, N);
 	
         int startPosX = (rowRank%chunkPerLine)*blockSize;
-        int startPosY = colRank * blockWidth * blockSize;
-
-        int rowSendSize = blockWidth;
-        int rowRecSize = blockSize;
-	int colSendSize = blockWidth*blockHeight;
-	int colRecSize = blockWidth*blockSize;
+        int startPosY = colRank * bigBlock * blockSize;
 
 	for(int i = 0; i < rowSize; i++){
 		int istartPosX = (i%chunkPerLine)*blockSize;
-                int istartPosY = i * blockWidth * blockSize;
-
-                if(i == rowSize-1)rowRecSize += N%chunkPerLine;
-		if(i == colSize-1)colRecSize = blockWidth*(blockSize+N%chunkPerLine);
+                int istartPosY = i * bigBlock * blockSize;
 
 		//send to/receive from row partners
 		if(rowRank != i){
-			for(int j = 0; j < blockHeight; j++){
+			for(int j = 0; j < bigBlock; j++){
 				MPI_Request req[2];
                         	
-				MPI_Isend(&rowMatA[startPosX+j*N], rowSendSize, MPI_INT, i, 0 ,rowComm, &req[0]);
-                                MPI_Irecv(&rowMatA[istartPosX+j*N], rowRecSize, MPI_INT, i, 0 ,rowComm, &req[1]);
+				MPI_Isend(&rowMatA[startPosX+j*N], bigBlock, MPI_INT, i, 0 ,rowComm, &req[0]);
+                                MPI_Irecv(&rowMatA[istartPosX+j*N], bigBlock, MPI_INT, i, 0 ,rowComm, &req[1]);
 				
 				MPI_Waitall(2, req, MPI_STATUS_IGNORE);
 			}
@@ -91,27 +80,27 @@ int main(int argc, char* argv){
 		if(colRank != i){
 			MPI_Request req[2];
 
-                        MPI_Isend(&colMatB[startPosY], colSendSize, MPI_INT, i, 0 ,colComm, &req[0]);
-                        MPI_Irecv(&colMatB[istartPosY], colRecSize, MPI_INT, i, 0 ,colComm, &req[1]);
+                        MPI_Isend(&colMatB[startPosY], bigBlock*bigBlock, MPI_INT, i, 0 ,colComm, &req[0]);
+                        MPI_Irecv(&colMatB[istartPosY], bigBlock*bigBlock, MPI_INT, i, 0 ,colComm, &req[1]);
 
                         MPI_Waitall(2, req, MPI_STATUS_IGNORE);
                 }
 	}
 	
-	if(rank==6)print_matrix2(rowMatA, N, blockHeight);
-        if(rank==6)print_matrix2(colMatB, blockWidth, N);
+	//if(rank==0)print_matrix2(rowMatA, N, bigBlock);
+        //if(rank==0)print_matrix2(colMatB, bigBlock, N);
 
-	mul_matrix_mpi_rect2(rowMatA, colMatB, partRes, N, blockWidth);
+	mul_matrix_mpi_rect2(rowMatA, colMatB, partRes, N, bigBlock);
 	
-	if(rank==6)print_matrix(partRes, N);
+	//if(rank==0)print_matrix(partRes, N);
 
 	char resultPath[50];
 	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/C_%ix%i.bin", N, N);
 	write_matrix_mpi_fw_stripe(partRes, resultPath, N);
 		
 	if(rank == 0){
-		read_matrix_bin(partRes, resultPath, N);
-		print_matrix(partRes, N);		
+		//read_matrix_bin(partRes, resultPath, N);
+		//print_matrix(partRes, N);		
 		printf("time taken: %llu ms\n", stop_time());
 	}// */ 
 
