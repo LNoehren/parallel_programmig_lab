@@ -19,6 +19,8 @@ int mul_matrix_mpi_rect(int* first, int* second, int* result, int N);
 
 int mul_matrix_mpi_rect2(int* first, int* second, int* result, int N, int M);
 
+int mul_matrix_mpi_rect_small(int* first, int* second, int* result, int N, int M);
+
 int write_matrix(int*data, char* filename, int N);
 
 int write_matrix_mpi(int*data, char* filename, int N);
@@ -28,6 +30,8 @@ int write_matrix_mpi_all(int*data, char* filename, int N);
 int write_matrix_mpi_fw(int*data, char* filename, int N);
 
 int write_matrix_mpi_fw_stripe(int*data, char* filename, int N);
+
+int write_matrix_mpi_fw_stripe_improved(int*data, char* filename, int N);
 
 static struct timeval tm1;
 

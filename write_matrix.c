@@ -107,7 +107,7 @@ int write_matrix_mpi_fw(int* data, char* filename, int N) {
         return 0;
 }
 
-//write a matrix using mpi fileviews and striping with mpi_info
+//write a matrix using mpi fileviews and striping with mpi_info. data is whole matrix with only own block filled
 int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
         MPI_File file;
         int rank;
@@ -156,6 +156,54 @@ int write_matrix_mpi_fw_stripe(int* data, char* filename, int N) {
 	MPI_Info_free(&info);
         return 0;
 }
+
+//write a matrix using mpi fileviews and striping with mpi_info. data is only own submatrix
+int write_matrix_mpi_fw_stripe_improved(int* data, char* filename, int N) {
+        MPI_File file;
+        int rank;
+        int worldSize;
+
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+
+        int chunkPerLine = sqrt(worldSize);
+        int blockWidth = N/chunkPerLine;
+        int startPosX = (rank%chunkPerLine)*blockWidth;
+        int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
+
+        int bigChunkX = blockWidth;
+        int bigChunkY = blockWidth;
+        if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += N%chunkPerLine;
+        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += N%chunkPerLine;
+
+        MPI_Datatype dataBlock, matRow;
+        MPI_Type_contiguous(bigChunkX, MPI_INT, &dataBlock);
+        MPI_Type_create_resized(dataBlock, 0, N * sizeof(int), &matRow);
+        MPI_Type_commit(&matRow);
+
+        int stripe_count = worldSize;
+        if(stripe_count > 20) stripe_count = 20;
+        int stripe_size = 4*N*N / stripe_count;
+
+        char temp[100];
+        sprintf(temp, "%d", stripe_count);
+
+        MPI_Info info;
+        MPI_Info_create(&info);
+        MPI_Info_set(info, "striping_factor", temp);
+        MPI_Info_set(info, "cb_nodes", temp);
+        sprintf(temp, "%d", stripe_size);
+        MPI_Info_set(info, "striping unit", temp);
+
+        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, info, &file);
+        MPI_File_set_view(file, sizeof(int) * (startPosX+startPosY), MPI_INT, matRow, "native", info);
+        MPI_File_write(file, &data[0], bigChunkY, matRow, MPI_STATUS_IGNORE);
+        MPI_File_close(&file);
+
+        MPI_Info_free(&info);
+        return 0;
+}
+
 
 //print a NxN matrix to stdout
 void print_matrix(int* matrix, int N){
