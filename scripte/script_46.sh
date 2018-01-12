@@ -13,4 +13,4 @@ cd /home/nhmqnoeh
 
 module load intel
 # run the simulation
-mpirun ./mpi_main46
+mpirun -env I_MPI_EXTRA_FILESYSTEM=on -env I_MPI_EXTRA_FILESYSTEM_LIST=lustre ./mpi_main46
