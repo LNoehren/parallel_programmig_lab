@@ -63,7 +63,11 @@ int write_matrix_mpi_all(int* data, char* filename, int N) {
         MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &file);
         for(int i = 0; i < bigChunkY; i++){
                 int startPos = startPosX+startPosY+i*N;
-		MPI_File_write_at_all(file, sizeof(int)*startPos, &data[startPos], bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
+		if(i < blockWidth){
+			MPI_File_write_at_all(file, sizeof(int)*startPos, &data[startPos], bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
+		}
+		else
+			MPI_File_write_at(file, sizeof(int)*startPos, &data[startPos], bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
         }
         MPI_File_close(&file);
         return 0;

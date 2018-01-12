@@ -123,17 +123,14 @@ int read_matrix_mpi_fw2(int* data, char* filename, int N, int M) {
         int startPosX = (rank%chunkPerLine) * blockWidth;
         int startPosY = (int)(rank/chunkPerLine) * blockWidth * matSize;
 	
-	int bigChunkX = blockWidth;
-	int bigChunkY = blockWidth;
-	if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += matSize%chunkPerLine;
-        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += matSize%chunkPerLine;	
+	int bigChunk = blockWidth + matSize%chunkPerLine;
 
 	//startPos in data
 	int startPosXData = N > M ? startPosX : 0;
 	int startPosYData = N > M ? 0 : (int)(rank/chunkPerLine)*blockWidth*N;
 
         MPI_Datatype dataBlock, matRow;
-        MPI_Type_contiguous(bigChunkX, MPI_INT, &dataBlock);
+        MPI_Type_contiguous(bigChunk, MPI_INT, &dataBlock);
 	MPI_Type_create_resized(dataBlock, 0, matSize * sizeof(int), &matRow);
         MPI_Type_commit(&matRow);
 
@@ -142,7 +139,7 @@ int read_matrix_mpi_fw2(int* data, char* filename, int N, int M) {
 	int startPos = startPosX+startPosY;
 	MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, matRow, "native", MPI_INFO_NULL);
 
-	for(int i = 0; i < bigChunkY; i++){
+	for(int i = 0; i < bigChunk; i++){
 		int startPosData = startPosXData+startPosYData+i*N;
                 MPI_File_read(file, &data[startPosData], 1, matRow, MPI_STATUS_IGNORE);
         }
