@@ -7,9 +7,11 @@ int mul_matrix(int* first, int* second, int* result, int N){
 	
 	for(int i = 0; i < N; i++){
 		for(int k = 0; k < N; k++){
+			int sum = 0;
 			for(int j = 0; j < N; j++){
-				result[i+k*N] += first[j+k*N] * second[i+j*N];
+				sum += first[j+k*N] * second[i+j*N];
 			}
+			result[i+k*N] = sum;
 		}
 	}
 	return 0;
@@ -98,8 +100,8 @@ int mul_matrix_mpi_rect_small(int* first, int* second, int* result, int N, int M
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	int pos = 0;
-        for(int i = 0; i < M; i++){
-                for(int k = 0; k < M; k++){
+        for(int k = 0; k < M; k++){
+                for(int i = 0; i < M; i++){
                         int sum = 0;
                         for(int j = 0; j < N; j++){
                                 sum += first[j+k*N] * second[i+j*M];

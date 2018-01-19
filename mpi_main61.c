@@ -92,17 +92,19 @@ int main(int argc, char* argv){
 
 	mul_matrix_mpi_rect_small(rowMatA, colMatB, partRes, N, bigBlock);
 	
-	//if(rank==0)print_matrix(partRes, N);
+	//if(rank==0)print_matrix(partRes, bigBlock);
 
 	char resultPath[50];
 	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/C_%ix%i.bin", N, N);
 	write_matrix_mpi_fw_stripe_improved(partRes, resultPath, N);
 		
 	if(rank == 0){
-		read_matrix_bin(partRes, resultPath, N);
-		print_matrix(partRes, N);		
+		/*int* result = malloc(sizeof(int)*N*N);
+		read_matrix_bin(result, resultPath, N);
+		print_matrix(result, N);
+		free(result);// */		
 		printf("time taken: %llu ms\n", stop_time());
-	}// */ 
+	} 
 
 	free(rowMatA);
 	free(colMatB);

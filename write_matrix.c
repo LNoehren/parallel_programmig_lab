@@ -173,8 +173,8 @@ int write_matrix_mpi_fw_stripe_improved(int* data, char* filename, int N) {
 
         int bigChunkX = blockWidth;
         int bigChunkY = blockWidth;
-        if((rank%chunkPerLine) == chunkPerLine-1) bigChunkX += N%chunkPerLine;
-        if((int)(rank/chunkPerLine) == chunkPerLine-1) bigChunkY += N%chunkPerLine;
+        /*if((rank%chunkPerLine) == chunkPerLine-1)*/ bigChunkX += N%chunkPerLine;
+        /*if((int)(rank/chunkPerLine) == chunkPerLine-1)*/ bigChunkY += N%chunkPerLine;
 
         MPI_Datatype dataBlock, matRow;
         MPI_Type_contiguous(bigChunkX, MPI_INT, &dataBlock);
@@ -197,7 +197,7 @@ int write_matrix_mpi_fw_stripe_improved(int* data, char* filename, int N) {
 
         MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, info, &file);
         MPI_File_set_view(file, sizeof(int) * (startPosX+startPosY), MPI_INT, matRow, "native", info);
-        MPI_File_write(file, &data[0], bigChunkY, matRow, MPI_STATUS_IGNORE);
+        MPI_File_write(file, &data[0], bigChunkY*bigChunkX, MPI_INT, MPI_STATUS_IGNORE);
         MPI_File_close(&file);
 
         MPI_Info_free(&info);
