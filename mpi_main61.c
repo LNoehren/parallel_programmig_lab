@@ -52,13 +52,13 @@ int main(int argc, char* argv){
 	snprintf(aPath, sizeof(aPath), "/bigwork/nhmqnoeh/A_%ix%i.bin", N, N);
 	snprintf(bPath, sizeof(bPath), "/bigwork/nhmqnoeh/B_%ix%i.bin", N, N);
 	
-	read_matrix_mpi_fw2(rowMatA, aPath, N, bigBlock);
-	read_matrix_mpi_fw2(colMatB, bPath, bigBlock, N);
+	read_matrix_mpi_fw3(rowMatA, aPath, N, bigBlock);
+	read_matrix_mpi_fw3(colMatB, bPath, bigBlock, N);
 
-	//if(rank==0)print_matrix2(rowMatA, N, bigBlock);
-	//if(rank==0)print_matrix2(colMatB, bigBlock, N);
+	if(rank==0)print_matrix2(rowMatA, bigBlock, N);
+	if(rank==0)print_matrix2(colMatB, bigBlock, N);
 	
-        int startPosX = (rowRank%chunkPerLine)*blockSize;
+        /*int startPosX = (rowRank%chunkPerLine)*blockSize;
         int startPosY = colRank * bigBlock * blockSize;
 
 	for(int i = 0; i < rowSize; i++){
@@ -74,6 +74,8 @@ int main(int argc, char* argv){
                                 MPI_Irecv(&rowMatA[istartPosX+j*N], bigBlock, MPI_INT, i, 0 ,rowComm, &req[1]);
 				
 				MPI_Waitall(2, req, MPI_STATUS_IGNORE);
+
+				//MPI_Allgather(&rowMatA[startPosX+j*N], bigblock, MPI_INT, &rowMatA, bigBlock, MPI_INT, rowComm);
 			}
                	}
 		//send to/receive from col partners
@@ -85,10 +87,13 @@ int main(int argc, char* argv){
 
                         MPI_Waitall(2, req, MPI_STATUS_IGNORE);
                 }
-	}
+	}*/
 	
-	//if(rank==0)print_matrix2(rowMatA, N, bigBlock);
-        //if(rank==0)print_matrix2(colMatB, bigBlock, N);
+	MPI_Allgather(MPI_IN_PLACE, bigBlock*bigBlock, MPI_INT, rowMatA, bigBlock*bigBlock, MPI_INT, rowComm);
+	MPI_Allgather(MPI_IN_PLACE, bigBlock*bigBlock, MPI_INT, colMatB, bigBlock*bigBlock, MPI_INT, colComm);
+	
+	if(rank==0)print_matrix2(rowMatA, bigBlock, N);
+        if(rank==0)print_matrix2(colMatB, bigBlock, N);
 
 	mul_matrix_mpi_rect_small(rowMatA, colMatB, partRes, N, bigBlock);
 	
@@ -99,7 +104,7 @@ int main(int argc, char* argv){
 	write_matrix_mpi_fw_stripe_improved(partRes, resultPath, N);
 		
 	if(rank == 0){
-		/*int* result = malloc(sizeof(int)*N*N);
+		int* result = malloc(sizeof(int)*N*N);
 		read_matrix_bin(result, resultPath, N);
 		print_matrix(result, N);
 		free(result);// */		

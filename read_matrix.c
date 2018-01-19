@@ -147,3 +147,45 @@ int read_matrix_mpi_fw2(int* data, char* filename, int N, int M) {
         return 0;
 }
 
+//same as read_matrix_mpi_fw2 but always writes datablocks in continous memory
+int read_matrix_mpi_fw3(int* data, char* filename, int N, int M) {
+        MPI_File file;
+        int rank;
+        int worldSize;
+
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+
+        int matSize = N > M ? N : M;
+
+        //startPos in file
+        int chunkPerLine = sqrt(worldSize);
+        int blockWidth = matSize/chunkPerLine;
+        int startPosX = (rank%chunkPerLine) * blockWidth;
+        int startPosY = (int)(rank/chunkPerLine) * blockWidth * matSize;
+
+        int bigChunk = blockWidth + matSize%chunkPerLine;
+
+        //startPos in data
+        int startPosXData = 0;
+        int startPosYData = N > M ? (rank%chunkPerLine)*blockWidth*M : (int)(rank/chunkPerLine)*blockWidth*N;
+
+        MPI_Datatype dataBlock, matRow;
+        MPI_Type_contiguous(bigChunk, MPI_INT, &dataBlock);
+        MPI_Type_create_resized(dataBlock, 0, matSize * sizeof(int), &matRow);
+        MPI_Type_commit(&matRow);
+
+        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
+
+        int startPos = startPosX+startPosY;
+        MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, matRow, "native", MPI_INFO_NULL);
+
+        //for(int i = 0; i < bigChunk; i++){
+                //int startPosData = startPosXData+startPosYData+i*N;
+                MPI_File_read(file, &data[startPosYData], bigChunk*bigChunk, MPI_INT, MPI_STATUS_IGNORE);
+        //}
+        MPI_File_close(&file);
+        return 0;
+}
+
+
