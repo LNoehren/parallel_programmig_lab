@@ -9,7 +9,7 @@
 int main(int argc, char* argv){
 	int rank;
 	int worldSize;
-	int N = 10;
+	int N = 30000;
 
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -52,48 +52,42 @@ int main(int argc, char* argv){
 	snprintf(aPath, sizeof(aPath), "/bigwork/nhmqnoeh/A_%ix%i.bin", N, N);
 	snprintf(bPath, sizeof(bPath), "/bigwork/nhmqnoeh/B_%ix%i.bin", N, N);
 	
-	read_matrix_mpi_fw3(rowMatA, aPath, N, bigBlock);
+	read_matrix_mpi_fw2(rowMatA, aPath, N, bigBlock);
 	read_matrix_mpi_fw3(colMatB, bPath, bigBlock, N);
 
-	if(rank==0)print_matrix2(rowMatA, bigBlock, N);
-	if(rank==0)print_matrix2(colMatB, bigBlock, N);
+	//if(rank==0)print_matrix2(rowMatA, N, bigBlock);
+	//if(rank==0)print_matrix2(colMatB, bigBlock, N);
 	
-        /*int startPosX = (rowRank%chunkPerLine)*blockSize;
-        int startPosY = colRank * bigBlock * blockSize;
-
+        int startPosX = rowRank * blockSize;
+        int startPosY = colRank*bigBlock*blockSize;
+	
+	int numberOfOperations = 2*(rowSize-1)+2*bigBlock*(rowSize-1);
+	MPI_Request req[numberOfOperations];
+	int reqPos=0;
 	for(int i = 0; i < rowSize; i++){
-		int istartPosX = (i%chunkPerLine)*blockSize;
-                int istartPosY = i * bigBlock * blockSize;
+                int istartPosX = i * blockSize;
+		int istartPosY = i * blockSize * bigBlock;
 
 		//send to/receive from row partners
 		if(rowRank != i){
 			for(int j = 0; j < bigBlock; j++){
-				MPI_Request req[2];
-                        	
-				MPI_Isend(&rowMatA[startPosX+j*N], bigBlock, MPI_INT, i, 0 ,rowComm, &req[0]);
-                                MPI_Irecv(&rowMatA[istartPosX+j*N], bigBlock, MPI_INT, i, 0 ,rowComm, &req[1]);
-				
-				MPI_Waitall(2, req, MPI_STATUS_IGNORE);
-
-				//MPI_Allgather(&rowMatA[startPosX+j*N], bigblock, MPI_INT, &rowMatA, bigBlock, MPI_INT, rowComm);
+				MPI_Isend(&rowMatA[startPosX+j*N], bigBlock, MPI_INT, i, 0 ,rowComm, &req[reqPos++]);
+                        	MPI_Irecv(&rowMatA[istartPosX+j*N], bigBlock, MPI_INT, i, 0 ,rowComm, &req[reqPos++]);
 			}
                	}
 		//send to/receive from col partners
 		if(colRank != i){
-			MPI_Request req[2];
-
-                        MPI_Isend(&colMatB[startPosY], bigBlock*bigBlock, MPI_INT, i, 0 ,colComm, &req[0]);
-                        MPI_Irecv(&colMatB[istartPosY], bigBlock*bigBlock, MPI_INT, i, 0 ,colComm, &req[1]);
-
-                        MPI_Waitall(2, req, MPI_STATUS_IGNORE);
+                        MPI_Isend(&colMatB[startPosY], bigBlock*bigBlock, MPI_INT, i, 0 ,colComm, &req[reqPos++]);
+                        MPI_Irecv(&colMatB[istartPosY], bigBlock*bigBlock, MPI_INT, i, 0 ,colComm, &req[reqPos++]);
                 }
-	}*/
+	}
+	MPI_Waitall(numberOfOperations, req, MPI_STATUS_IGNORE);
 	
-	MPI_Allgather(MPI_IN_PLACE, bigBlock*bigBlock, MPI_INT, rowMatA, bigBlock*bigBlock, MPI_INT, rowComm);
-	MPI_Allgather(MPI_IN_PLACE, bigBlock*bigBlock, MPI_INT, colMatB, bigBlock*bigBlock, MPI_INT, colComm);
+	//MPI_Allgather(MPI_IN_PLACE, bigBlock*bigBlock, MPI_INT, rowMatA, bigBlock*bigBlock, MPI_INT, rowComm);
+	//MPI_Allgather(MPI_IN_PLACE, bigBlock*bigBlock, MPI_INT, colMatB, bigBlock*bigBlock, MPI_INT, colComm);
 	
-	if(rank==0)print_matrix2(rowMatA, bigBlock, N);
-        if(rank==0)print_matrix2(colMatB, bigBlock, N);
+	//if(rank==0)print_matrix2(rowMatA, N, bigBlock);
+        //if(rank==0)print_matrix2(colMatB, bigBlock, N);
 
 	mul_matrix_mpi_rect_small(rowMatA, colMatB, partRes, N, bigBlock);
 	
@@ -104,7 +98,7 @@ int main(int argc, char* argv){
 	write_matrix_mpi_fw_stripe_improved(partRes, resultPath, N);
 		
 	if(rank == 0){
-		int* result = malloc(sizeof(int)*N*N);
+		/*int* result = malloc(sizeof(int)*N*N);
 		read_matrix_bin(result, resultPath, N);
 		print_matrix(result, N);
 		free(result);// */		

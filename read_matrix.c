@@ -167,8 +167,7 @@ int read_matrix_mpi_fw3(int* data, char* filename, int N, int M) {
         int bigChunk = blockWidth + matSize%chunkPerLine;
 
         //startPos in data
-        int startPosXData = 0;
-        int startPosYData = N > M ? (rank%chunkPerLine)*blockWidth*M : (int)(rank/chunkPerLine)*blockWidth*N;
+        int startPosData = N > M ? (rank%chunkPerLine)*blockWidth*M : (int)(rank/chunkPerLine)*blockWidth*N;
 
         MPI_Datatype dataBlock, matRow;
         MPI_Type_contiguous(bigChunk, MPI_INT, &dataBlock);
@@ -180,10 +179,7 @@ int read_matrix_mpi_fw3(int* data, char* filename, int N, int M) {
         int startPos = startPosX+startPosY;
         MPI_File_set_view(file, sizeof(int) * startPos, MPI_INT, matRow, "native", MPI_INFO_NULL);
 
-        //for(int i = 0; i < bigChunk; i++){
-                //int startPosData = startPosXData+startPosYData+i*N;
-                MPI_File_read(file, &data[startPosYData], bigChunk*bigChunk, MPI_INT, MPI_STATUS_IGNORE);
-        //}
+        MPI_File_read(file, &data[startPosData], bigChunk*bigChunk, MPI_INT, MPI_STATUS_IGNORE);
         MPI_File_close(&file);
         return 0;
 }

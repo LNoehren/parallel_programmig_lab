@@ -93,7 +93,6 @@ int mul_matrix_mpi_rect2(int* first, int* second, int* result, int N, int M){
 }
 
 //multiply a matrix with mpi, split in quadratic blocs, input matrices are NxM and MxN. write to MxM
-//first is actually also MxN to store blocks in continous memory
 int mul_matrix_mpi_rect_small(int* first, int* second, int* result, int N, int M){
         int world_size;
         int rank;
@@ -105,9 +104,7 @@ int mul_matrix_mpi_rect_small(int* first, int* second, int* result, int N, int M
                 for(int i = 0; i < M; i++){
                         int sum = 0;
                         for(int j = 0; j < N; j++){
-				int q = j%M;
-				int p = k+(int)(j/M)*M;
-                                sum += first[q+p*M] * second[i+j*M];
+                                sum += first[j+k*N] * second[i+j*M];
                         }
                         result[pos++] = sum;
                 }

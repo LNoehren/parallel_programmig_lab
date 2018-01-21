@@ -1,38 +1,38 @@
 #include <stdlib.h>
 #include <sys/time.h>
-
+//3.1
 int read_matrix_bin(int* data, char* filename, int N);
-
+//(3.5)wird nicht mehr genutzt
 int read_part_matrix_bin(int* data, char* filename, int N);
-
+//3.1
 int read_matrix_data(int* data, char* filename, int N);
-
+//4.5
 int read_matrix_mpi_fw(int* data, char* filename, int N);
-
+//5.1
 int read_matrix_mpi_fw2(int* data, char* filename, int N, int M);
-
+//6.1
 int read_matrix_mpi_fw3(int* data, char* filename, int N, int M);
-
+//3.2
 int mul_matrix(int* first, int* second, int* result, int N);
-
+//3.4
 int mul_matrix_mpi(int* first, int* second, int* result, int N);
-
+//4.1
 int mul_matrix_mpi_rect(int* first, int* second, int* result, int N);
-
+//5.1
 int mul_matrix_mpi_rect2(int* first, int* second, int* result, int N, int M);
-
+//6.1
 int mul_matrix_mpi_rect_small(int* first, int* second, int* result, int N, int M);
-
+//3.3
 int write_matrix(int*data, char* filename, int N);
-
+//4.2
 int write_matrix_mpi(int*data, char* filename, int N);
-
+//4.3
 int write_matrix_mpi_all(int*data, char* filename, int N);
-
+//4.4
 int write_matrix_mpi_fw(int*data, char* filename, int N);
-
+//4.6
 int write_matrix_mpi_fw_stripe(int*data, char* filename, int N);
-
+//6.1
 int write_matrix_mpi_fw_stripe_improved(int*data, char* filename, int N);
 
 static struct timeval tm1;
