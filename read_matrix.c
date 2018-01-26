@@ -184,4 +184,32 @@ int read_matrix_mpi_fw3(int* data, char* filename, int N, int M) {
         return 0;
 }
 
+//reads the whole NxM block
+int read_matrix_mpi_row(int* data, char* filename, int N, int M) {
+        MPI_File file;
+        int rank;
+        int worldSize;
+
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+
+        //startPos in file
+        int chunkPerLine = sqrt(worldSize);
+        int blockWidth = N/chunkPerLine;
+        int startPosY = (int)(rank/chunkPerLine) * blockWidth * N;
+
+        int bigChunk = blockWidth + N%chunkPerLine;
+
+        MPI_Datatype matRow;
+        MPI_Type_contiguous(bigChunk*N, MPI_INT, &matRow);
+        MPI_Type_commit(&matRow);
+
+        MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_RDONLY, MPI_INFO_NULL, &file);
+
+        MPI_File_set_view(file, sizeof(int) * startPosY, MPI_INT, matRow, "native", MPI_INFO_NULL);
+
+        MPI_File_read(file, data, bigChunk*N, MPI_INT, MPI_STATUS_IGNORE);
+        MPI_File_close(&file);
+        return 0;
+}
 

@@ -12,6 +12,8 @@ int read_matrix_mpi_fw(int* data, char* filename, int N);
 int read_matrix_mpi_fw2(int* data, char* filename, int N, int M);
 //6.1
 int read_matrix_mpi_fw3(int* data, char* filename, int N, int M);
+//7.3
+int read_matrix_mpi_row(int* data, char* filename, int N, int M);
 //3.2
 int mul_matrix(int* first, int* second, int* result, int N);
 //3.4
@@ -22,6 +24,8 @@ int mul_matrix_mpi_rect(int* first, int* second, int* result, int N);
 int mul_matrix_mpi_rect2(int* first, int* second, int* result, int N, int M);
 //6.1
 int mul_matrix_mpi_rect_small(int* first, int* second, int* result, int N, int M);
+//7.2
+int mul_and_write_matrix(int* first, int* second, int N, int M, char* filename);
 //3.3
 int write_matrix(int*data, char* filename, int N);
 //4.2
