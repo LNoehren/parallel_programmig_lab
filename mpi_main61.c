@@ -9,7 +9,7 @@
 int main(int argc, char* argv){
 	int rank;
 	int worldSize;
-	int N = 30000;
+	int N = 1000;
 
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -68,6 +68,7 @@ int main(int argc, char* argv){
                 int istartPosX = i * blockSize;
 		int istartPosY = i * blockSize * bigBlock;
 
+	_Allgather(MPI_IN_PLACE, bigBlock*bigBlock, MPI_INT, colMatB, bigBlock*bigBlock, MPI_INT, colComm);
 		//send to/receive from row partners
 		if(rowRank != i){
 			for(int j = 0; j < bigBlock; j++){
@@ -94,7 +95,7 @@ int main(int argc, char* argv){
 	//if(rank==0)print_matrix(partRes, bigBlock);
 
 	char resultPath[50];
-	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/C_%ix%i.bin", N, N);
+	snprintf(resultPath, sizeof(resultPath), "/bigwork/nhmqnoeh/C_striped_%ix%i.bin", N, N);
 	write_matrix_mpi_fw_stripe_improved(partRes, resultPath, N);
 		
 	if(rank == 0){

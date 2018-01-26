@@ -9,7 +9,7 @@
 int main(int argc, char* argv){
 	int rank;
 	int worldSize;
-	int N = 30000;
+	int N = 1000;
 
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);

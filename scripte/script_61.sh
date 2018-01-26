@@ -14,4 +14,4 @@ cd /home/nhmqnoeh
 module load intel
 module load VTune
 # run the simulation
-mpirun -n 16 -ppn 4 -l amplxe-cl -collect locksandwaits -trace-mpi -result-dir my_result_30000_law -- ./mpi_main61
+mpirun -n 16 -ppn 4 -l amplxe-cl -collect hotspots -trace-mpi -result-dir my_result_30000_hot -- ./mpi_main73

@@ -48,7 +48,7 @@ int main(int argc, char* argv){
         snprintf(partMatAPath, sizeof(partMatAPath), "/bigwork/nhmqnoeh/partialMatA/result.%i", getpid());
 	write_matrix(partRes, partMatAPath, N);
 	
-	if(rank==0)print_matrix(partRes, N);
+	//if(rank==0)print_matrix(partRes, N);
 	
 	//read matB
 	if(rank == 0){

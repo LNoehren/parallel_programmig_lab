@@ -8,7 +8,7 @@
 int main(int argc, char* argv){
 	int rank;
 	int worldSize;
-	int N = 30000;
+	int N = 10;
 
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -81,7 +81,10 @@ int main(int argc, char* argv){
         int recSize = blockWidth;
 
         if((rank%chunkPerLine) == chunkPerLine-1)sendSize += N%chunkPerLine;
+	int lineCount = blockWidth + (N%chunkPerLine);
 
+	MPI_Request req[4*(chunkPerLine*chunkPerLine-1)*lineCount];
+	int reqCount = 0;
 	for(int i = 0; i < chunkPerLine*chunkPerLine; i++){
 		if(rank != i){
 			int istartPosX = (i%chunkPerLine)*blockWidth;
@@ -89,26 +92,26 @@ int main(int argc, char* argv){
 		
 			if((i%chunkPerLine) == chunkPerLine-1)recSize += N%chunkPerLine;
 		
-			int lineCount = blockWidth + (N%chunkPerLine);
 			for(int j = 0; j < lineCount; j++){
-				MPI_Request req[4];
+				//MPI_Request req[4];
 				
 				//only the lowest row has to send more than blockWidth
 				if((int)(rank/chunkPerLine) == chunkPerLine-1 || j < blockWidth){
-					MPI_Isend(&mat[startPosX+startPosY+j*N], sendSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[0]);
-                        		MPI_Isend(&matE[startPosX+startPosY+j*N], sendSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[1]);
+					MPI_Isend(&mat[startPosX+startPosY+j*N], sendSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
+                        		MPI_Isend(&matE[startPosX+startPosY+j*N], sendSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
 				}
 				
 				//only receive more then blockWidth from the lowest row
 				if((int)(i/chunkPerLine) == chunkPerLine-1 || (j < blockWidth)){
-					MPI_Irecv(&mat[istartPosX+istartPosY+j*N], recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[2]);
-                                	MPI_Irecv(&matE[istartPosX+istartPosY+j*N], recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[3]);
+					MPI_Irecv(&mat[istartPosX+istartPosY+j*N], recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
+                                	MPI_Irecv(&matE[istartPosX+istartPosY+j*N], recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
 				}
 				
-				MPI_Waitall(4, req, MPI_STATUS_IGNORE);
+				//MPI_Waitall(4, req, MPI_STATUS_IGNORE);
 			}
                	}
 	}
+	MPI_Waitall(reqCount, req, MPI_STATUS_IGNORE);
 	
 	//if(rank==0)print_matrix(mat, N);	
 
@@ -119,7 +122,7 @@ int main(int argc, char* argv){
 	write_matrix(partRes, partMatPath, N);
 		
 	if(rank == 0){
-		//print_matrix(partRes, N);		
+		print_matrix(partRes, N);		
 		printf("time taken: %llu ms\n", stop_time());
 	}// */ 
 

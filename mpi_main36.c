@@ -66,22 +66,21 @@ int main(int argc, char* argv){
 	read_matrix_bin(mat, partMatAPath, N);
 	read_matrix_bin(matE, partMatBPath, N);
 
+	MPI_Request req[4*(worldSize-1)];
+	int reqCount = 0;
 	for(int i = 0; i < worldSize; i++){
 		if(i != rank){
-			MPI_Request req[4];
-
-                        MPI_Isend(&mat[rank*N*chunkSize], N*bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[0]);
-                        MPI_Isend(&matE[rank*N*chunkSize], N*bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[1]);
+                  	MPI_Isend(&mat[rank*N*chunkSize], N*bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
+                        MPI_Isend(&matE[rank*N*chunkSize], N*bigChunk, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
                         
 			int recSize = chunkSize;
 			if(i == worldSize-1) recSize += N%worldSize;
                         
-			MPI_Irecv(&mat[i*N*chunkSize], N*recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[2]);
-	                MPI_Irecv(&matE[i*N*chunkSize], N*recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[3]);
-
-                        MPI_Waitall(4, req, MPI_STATUS_IGNORE);	
+			MPI_Irecv(&mat[i*N*chunkSize], N*recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
+	                MPI_Irecv(&matE[i*N*chunkSize], N*recSize, MPI_INT, i, 0 ,MPI_COMM_WORLD, &req[reqCount++]);
                	}
 	}
+	MPI_Waitall(4*(worldSize-1), req, MPI_STATUS_IGNORE);
 
 	mul_matrix_mpi(mat, matE, partRes, N);
 	
@@ -90,7 +89,7 @@ int main(int argc, char* argv){
 	write_matrix(partRes, partMatPath, N);
 		
 	if(rank == 0){
-		//print_matrix(partRes, N);		
+		//print_matrix(partRes, N);
 		printf("time taken: %llu ms\n", stop_time());
 	}
 
