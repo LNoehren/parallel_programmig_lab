@@ -161,7 +161,8 @@ int mul_and_write_matrix(int* first, int* second, int N, int M, char* filename){
 		MPI_File_write(file, result, M, MPI_INT, MPI_STATUS_IGNORE);
         }
 	MPI_File_close(&file);
-
+	
+	free(result);
         MPI_Info_free(&info);
         return 0;
 }
